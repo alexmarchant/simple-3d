@@ -90,9 +90,6 @@ export class Camera {
     movementVector.x = Math.sin(radians) * this.movementSpeed
     movementVector.z = Math.cos(radians) * this.movementSpeed
 
-
-    console.log(movementVector)
-
     return movementVector
   }
 
