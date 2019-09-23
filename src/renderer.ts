@@ -248,8 +248,6 @@ export class Renderer {
       return b.closestDistance - a.closestDistance
     })
 
-    console.log(meshDistances)
-
     return meshDistances.map(obj => {
       return obj.mesh
     })
