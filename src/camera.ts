@@ -25,6 +25,11 @@ export class Camera {
   rotationSpeed = 90
   keyboardInput: KeyboardInput
   activeKeyboardInput: ActiveKeyboardInput
+  pxElement: HTMLElement
+  pyElement: HTMLElement
+  pzElement: HTMLElement
+  rxElement: HTMLElement
+  ryElement: HTMLElement
 
   constructor() {
     this.position = { x: 0, y: 0, z: 0 }
@@ -45,10 +50,12 @@ export class Camera {
     this.position.x += movementVector.x * (ms / 1000)
     this.position.y += movementVector.y * (ms / 1000)
     this.position.z += movementVector.z * (ms / 1000)
+    this.showPosition()
 
     const rotationVector = this.calcRotationVector()
     this.rotation.x += rotationVector.x * (ms / 1000)
     this.rotation.y += rotationVector.y * (ms / 1000)
+    this.showRotation()
   }
 
   calcMovementVector(): Vector3D {
@@ -169,5 +176,31 @@ export class Camera {
     }
 
     return rotationVector
+  }
+
+  showPosition() {
+    if (!this.pxElement) {
+      this.pxElement = document.getElementById('px')
+    }
+    if (!this.pyElement) {
+      this.pyElement = document.getElementById('py')
+    }
+    if (!this.pzElement) {
+      this.pzElement = document.getElementById('pz')
+    }
+    this.pxElement.innerText = Math.round(this.position.x).toString()
+    this.pyElement.innerText = Math.round(this.position.y).toString()
+    this.pzElement.innerText = Math.round(this.position.z).toString()
+  }
+
+  showRotation() {
+    if (!this.rxElement) {
+      this.rxElement = document.getElementById('rx')
+    }
+    if (!this.ryElement) {
+      this.ryElement = document.getElementById('ry')
+    }
+    this.rxElement.innerText = Math.round(this.rotation.x).toString()
+    this.ryElement.innerText = Math.round(this.rotation.y).toString()
   }
 }

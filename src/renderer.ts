@@ -15,16 +15,19 @@ export class Renderer {
   canvasWidth: number
   canvasHeight: number
   playerPosition: Vertex
-  wallHeight: number = 10
   camera: Camera
   meshes: Mesh[]
   intervalID: number 
+  fpsElement: HTMLElement
+  dElement: HTMLElement
+  renderPolys = true
+  renderEdges = false
+  renderVerts = false
   d: number = 400
   fps: number = 40
   lastFrameDate = new Date()
   frameDurationCache: number[] = []
   frameDurationCacheCurrentIndex = 0
-  fpsElement: HTMLElement
 
   constructor(options: RendererOptions) {
     this.canvas = options.canvas
@@ -39,6 +42,7 @@ export class Renderer {
     this.intervalID = window.setInterval(() => {
       const frameDuration: number = new Date().getTime() - this.lastFrameDate.getTime()
       this.showFPS(frameDuration)
+      this.showD()
       this.camera.move(frameDuration)
       this.render()
       this.lastFrameDate = new Date()
@@ -51,24 +55,43 @@ export class Renderer {
   }
 
   renderShapes() {
-    this.meshes.forEach(mesh => {
-      this.renderMesh(mesh)
-    })
-  }
+    if (this.renderPolys) {
+      this.meshes.forEach(mesh => {
+        mesh.polygons.forEach(polygon => {
+          this.renderPolygon(polygon)
+        })
+      })
+    }
 
-  renderMesh(mesh: Mesh) {
-    mesh.polygons.forEach(polygon => {
-      this.renderPolygon(polygon)
-    })
+    if (this.renderEdges) {
+      this.meshes.forEach(mesh => {
+        mesh.polygons.forEach(polygon => {
+          this.renderLine(polygon.a, polygon.b, 'black')
+          this.renderLine(polygon.b, polygon.c, 'black')
+          this.renderLine(polygon.c, polygon.a, 'black')
+        })
+      })
+    }
+
+    if (this.renderVerts) {
+      this.meshes.forEach(mesh => {
+        mesh.polygons.forEach(polygon => {
+          this.renderVertex(polygon.a, 3, 'red')
+          this.renderVertex(polygon.b, 3, 'red')
+          this.renderVertex(polygon.c, 3, 'red')
+        })
+      })
+    }
   }
 
   renderPolygon(polygon: Polygon) {
-    this.renderLine(polygon.a, polygon.b, 'black')
-    this.renderLine(polygon.b, polygon.c, 'black')
-    this.renderLine(polygon.c, polygon.a, 'black')
-    this.renderVertex(polygon.a, 3, 'red')
-    this.renderVertex(polygon.b, 3, 'red')
-    this.renderVertex(polygon.c, 3, 'red')
+    const cameraVertexA = this.orientVertexForCamera(polygon.a)
+    const pointA = this.projectVertex(cameraVertexA)
+    const cameraVertexB = this.orientVertexForCamera(polygon.b)
+    const pointB = this.projectVertex(cameraVertexB)
+    const cameraVertexC = this.orientVertexForCamera(polygon.c)
+    const pointC = this.projectVertex(cameraVertexC)
+    this.drawTriangle(pointA, pointB, pointC, polygon.color)
   }
 
   renderLine(vertexA: Vertex, vertexB: Vertex, color: string) {
@@ -120,6 +143,22 @@ export class Renderer {
     }
   }
 
+  drawTriangle(pointA: Point, pointB: Point, pointC: Point, color: string) {
+    const canvasPointA = this.translateToCanvasPoint(pointA)
+    const canvasPointB = this.translateToCanvasPoint(pointB)
+    const canvasPointC = this.translateToCanvasPoint(pointC)
+    this.context.fillStyle = color
+    this.context.strokeStyle = color
+    this.context.beginPath()
+    this.context.moveTo(canvasPointA.x, canvasPointA.y)
+    this.context.lineTo(canvasPointB.x, canvasPointB.y)
+    this.context.lineTo(canvasPointC.x, canvasPointC.y)
+    this.context.lineTo(canvasPointA.x, canvasPointA.y)
+    this.context.closePath()
+    this.context.fill()
+    this.context.stroke()
+  }
+
   drawPoint(point: Point, radius: number, color: string) {
     const canvasPoint = this.translateToCanvasPoint(point)
     this.context.fillStyle = color
@@ -131,7 +170,7 @@ export class Renderer {
   drawLine(pointA: Point, pointB: Point, color: string) {
     const canvasPointA = this.translateToCanvasPoint(pointA)
     const canvasPointB = this.translateToCanvasPoint(pointB)
-    this.context.fillStyle = color
+    this.context.strokeStyle = color
     this.context.beginPath()
     this.context.moveTo(canvasPointA.x, canvasPointA.y)
     this.context.lineTo(canvasPointB.x, canvasPointB.y)
@@ -166,5 +205,13 @@ export class Renderer {
     const avgFrameDuration = frameDurationSum / this.frameDurationCache.length
     const fps = Math.round(1000 / avgFrameDuration)
     this.fpsElement.innerText = fps.toString()
+  }
+
+  showD() {
+    if (!this.dElement) {
+      this.dElement = document.getElementById('fov')
+    }
+
+    this.dElement.innerText = this.d.toString()
   }
 }

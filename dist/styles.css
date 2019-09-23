@@ -17,9 +17,16 @@ body {
 }
 
 .header {
-  display: flex;
-  justify-content: space-between;
   width: 640px;
+}
+
+.header-group {
+  border-bottom: 1px solid #ccc;
+  padding: 5px 0;
+}
+
+.header-group:last-child {
+  border-bottom: 0;
 }
 
 canvas {

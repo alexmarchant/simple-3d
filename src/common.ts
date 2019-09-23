@@ -18,6 +18,7 @@ export interface Polygon {
   a: Vertex,
   b: Vertex,
   c: Vertex,
+  color: string,
 }
 
 export interface Vector3D {

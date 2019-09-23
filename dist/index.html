@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-group">
+        Projection plane distance:
+        <span id="fov"></span>
+        <br>
+        <input id="fov-slider" type="range" value="400" min="10" max="2000" />
+      </div>
+      <div class="header-group">
+        Position:
+        x: <span id="px"></span>,
+        y: <span id="py"></span>,
+        z: <span id="pz"></span>
+      </div>
+      <div class="header-group">
+        Rotation:
+        x: <span id="rx"></span>,
+        y: <span id="ry"></span>
+      </div>
+      <div class="header-group">
+        Render:
+        polys: <input id="render-polys" type="checkbox" checked="checked" />,
+        edges: <input id="render-edges" type="checkbox" />,
+        vertices: <input id="render-verts" type="checkbox" />
+      </div>
+      <div class="header-group">
+        FPS:
+        <span id="fps"></span>
+      </div>
+    </div>
+    <canvas id="canvas" width="640" height="480"></canvas>
+  </div>
+  <script src="/bundle.js"></script>
+</body>
+</html>

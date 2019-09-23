@@ -13,6 +13,7 @@ export interface RectMeshOptions {
   topRight: Vertex,
   bottomRight: Vertex,
   bottomLeft: Vertex,
+  color: string,
 }
 
 export class RectMesh extends Mesh {
@@ -22,11 +23,13 @@ export class RectMesh extends Mesh {
       a: options.topLeft,
       b: options.topRight,
       c: options.bottomLeft,
+      color: options.color,
     })
     this.polygons.push({
       a: options.topRight,
       b: options.bottomRight,
       c: options.bottomLeft,
+      color: options.color,
     })
   }
 }
