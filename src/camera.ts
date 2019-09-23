@@ -1,0 +1,173 @@
+import { Vertex, Rotation3D, Vector3D, Vector2D } from './common'
+
+export interface KeyboardInput {
+  w?: Date
+  a?: Date
+  s?: Date
+  d?: Date
+  q?: Date
+  e?: Date
+}
+
+interface ActiveKeyboardInput {
+  w: boolean
+  a: boolean
+  s: boolean
+  d: boolean
+  q: boolean
+  e: boolean
+}
+
+export class Camera {
+  position: Vertex
+  rotation: Rotation3D
+  movementSpeed = 100
+  rotationSpeed = 90
+  keyboardInput: KeyboardInput
+  activeKeyboardInput: ActiveKeyboardInput
+
+  constructor() {
+    this.position = { x: 0, y: 0, z: 0 }
+    this.rotation = { x: 0, y: 0 }
+    this.keyboardInput = {}
+    this.activeKeyboardInput = {
+      w: false,
+      a: false,
+      s: false,
+      d: false,
+      q: false,
+      e: false,
+    }
+  }
+
+  move(ms: number) {
+    const movementVector = this.calcMovementVector()
+    this.position.x += movementVector.x * (ms / 1000)
+    this.position.y += movementVector.y * (ms / 1000)
+    this.position.z += movementVector.z * (ms / 1000)
+
+    const rotationVector = this.calcRotationVector()
+    this.rotation.x += rotationVector.x * (ms / 1000)
+    this.rotation.y += rotationVector.y * (ms / 1000)
+  }
+
+  calcMovementVector(): Vector3D {
+    let movementVector = { x: 0, y: 0, z: 0 }
+    if (!this.isMoving) {
+      return movementVector
+    }
+
+    const angle = this.calcMovementAngle()
+    const absoluteAngle = this.rotation.x + angle
+    const radians = absoluteAngle * (Math.PI / 180)
+    movementVector.x = Math.sin(radians) * this.movementSpeed
+    movementVector.z = Math.cos(radians) * this.movementSpeed
+
+    return movementVector
+  }
+
+  get isMoving(): boolean {
+    return this.activeKeyboardInput.w ||
+      this.activeKeyboardInput.a ||
+      this.activeKeyboardInput.s ||
+      this.activeKeyboardInput.d
+  }
+
+  calcMovementAngle(): number {
+    if (this.activeKeyboardInput.w) {
+      if (this.activeKeyboardInput.d) {
+        return 45
+      }
+      if (this.activeKeyboardInput.a) {
+        return 315
+      }
+      return 0
+    }
+    if (this.activeKeyboardInput.s) {
+      if (this.activeKeyboardInput.d) {
+        return 135
+      }
+      if (this.activeKeyboardInput.a) {
+        return 225
+      }
+      return 180
+    }
+    if (this.activeKeyboardInput.d) {
+      return 90
+    }
+    if (this.activeKeyboardInput.a) {
+      return 270
+    }
+    return 0
+  }
+
+  setKeyboardInput(input: KeyboardInput) {
+    this.keyboardInput = input
+    this.activeKeyboardInput = this.calcActiveKeyboardInput()
+  }
+
+  calcActiveKeyboardInput(): ActiveKeyboardInput {
+    const activeKeyboardInput = {
+      w: false,
+      a: false,
+      s: false,
+      d: false,
+      q: false,
+      e: false,
+    }
+
+    // Forward backward
+    if (this.keyboardInput.w && this.keyboardInput.s) {
+      if (this.keyboardInput.w.getTime() > this.keyboardInput.s.getTime()) {
+        activeKeyboardInput.w = true
+      } else {
+        activeKeyboardInput.s = true
+      }
+    } else if (this.keyboardInput.w) {
+      activeKeyboardInput.w = true
+    } else if (this.keyboardInput.s) {
+      activeKeyboardInput.s = true
+    }
+
+    // Left right
+    if (this.keyboardInput.a && this.keyboardInput.d) {
+      if (this.keyboardInput.a.getTime() > this.keyboardInput.d.getTime()) {
+        activeKeyboardInput.a = true
+      } else {
+        activeKeyboardInput.d = true
+      }
+    } else if (this.keyboardInput.a) {
+      activeKeyboardInput.a = true
+    } else if (this.keyboardInput.d) {
+      activeKeyboardInput.d = true
+    }
+
+    // Rotate left right
+    if (this.keyboardInput.q && this.keyboardInput.e) {
+      if (this.keyboardInput.q.getTime() > this.keyboardInput.e.getTime()) {
+        activeKeyboardInput.q = true
+      } else {
+        activeKeyboardInput.e = true
+      }
+    } else if (this.keyboardInput.q) {
+      activeKeyboardInput.q = true
+    } else if (this.keyboardInput.e) {
+      activeKeyboardInput.e = true
+    }
+
+    return activeKeyboardInput
+  }
+
+  calcRotationVector(): Vector2D {
+    const rotationVector = { x: 0, y: 0 }
+
+    if (this.activeKeyboardInput.q) {
+      rotationVector.x = -this.rotationSpeed
+    }
+    if (this.activeKeyboardInput.e) {
+      rotationVector.x = this.rotationSpeed
+    }
+
+    return rotationVector
+  }
+}

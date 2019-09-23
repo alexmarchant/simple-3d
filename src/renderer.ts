@@ -1,0 +1,170 @@
+import { Polygon, Point, Vertex} from './common'
+import { Mesh } from './mesh'
+import { Camera } from './camera'
+
+interface RendererOptions {
+  canvas: HTMLCanvasElement,
+  canvasWidth: number,
+  canvasHeight: number,
+  meshes: Mesh[],
+}
+
+export class Renderer {
+  canvas: HTMLCanvasElement
+  context: CanvasRenderingContext2D
+  canvasWidth: number
+  canvasHeight: number
+  playerPosition: Vertex
+  wallHeight: number = 10
+  camera: Camera
+  meshes: Mesh[]
+  intervalID: number 
+  d: number = 400
+  fps: number = 40
+  lastFrameDate = new Date()
+  frameDurationCache: number[] = []
+  frameDurationCacheCurrentIndex = 0
+  fpsElement: HTMLElement
+
+  constructor(options: RendererOptions) {
+    this.canvas = options.canvas
+    this.context = this.canvas.getContext('2d')
+    this.canvasWidth = options.canvasWidth
+    this.canvasHeight = options.canvasHeight
+    this.meshes = options.meshes
+    this.camera = new Camera()
+  }
+
+  start() {
+    this.intervalID = window.setInterval(() => {
+      const frameDuration: number = new Date().getTime() - this.lastFrameDate.getTime()
+      this.showFPS(frameDuration)
+      this.camera.move(frameDuration)
+      this.render()
+      this.lastFrameDate = new Date()
+    }, 1000 / this.fps)
+  }
+
+  render() {
+    this.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight)
+    this.renderShapes()
+  }
+
+  renderShapes() {
+    this.meshes.forEach(mesh => {
+      this.renderMesh(mesh)
+    })
+  }
+
+  renderMesh(mesh: Mesh) {
+    mesh.polygons.forEach(polygon => {
+      this.renderPolygon(polygon)
+    })
+  }
+
+  renderPolygon(polygon: Polygon) {
+    this.renderLine(polygon.a, polygon.b, 'black')
+    this.renderLine(polygon.b, polygon.c, 'black')
+    this.renderLine(polygon.c, polygon.a, 'black')
+    this.renderVertex(polygon.a, 3, 'red')
+    this.renderVertex(polygon.b, 3, 'red')
+    this.renderVertex(polygon.c, 3, 'red')
+  }
+
+  renderLine(vertexA: Vertex, vertexB: Vertex, color: string) {
+    const cameraVertexA = this.orientVertexForCamera(vertexA)
+    const pointA = this.projectVertex(cameraVertexA)
+    const cameraVertexB = this.orientVertexForCamera(vertexB)
+    const pointB = this.projectVertex(cameraVertexB)
+    this.drawLine(pointA, pointB, color)
+  }
+
+  renderVertex(vertex: Vertex, radius: number, color: string) {
+    const cameraVertex = this.orientVertexForCamera(vertex)
+    const point = this.projectVertex(cameraVertex)
+    this.drawPoint(point, radius, color)
+  }
+
+  projectVertex(vertex: Vertex): Point {
+    const dz = this.d / vertex.z
+    return {
+      x: dz * vertex.x,
+      y: dz * vertex.y,
+    }
+  }
+
+  orientVertexForCamera(vertex: Vertex): Vertex {
+    const offsetVertex = this.offsetVertexForCamera(vertex)
+    const rotatedVertex = this.rotateVertexForCamera(offsetVertex)
+    return rotatedVertex
+  }
+
+  offsetVertexForCamera(vertex: Vertex): Vertex {
+    return {
+      x: vertex.x - this.camera.position.x,
+      y: vertex.y - this.camera.position.y,
+      z: vertex.z - this.camera.position.z,
+    }
+  }
+
+  rotateVertexForCamera(vertex: Vertex): Vertex {
+    const center = { x: 0, y: 0, z: 0 } // camera has been offset already
+    const radiansX = this.camera.rotation.x * (Math.PI / 180)
+    const radiansY = this.camera.rotation.y * (Math.PI / 180)
+    const rotatedX = Math.cos(radiansX) * (vertex.x - center.x) - Math.sin(radiansX) * (vertex.z - center.z) + center.x
+    const rotatedZ = Math.sin(radiansX) * (vertex.x - center.x) + Math.cos(radiansX) * (vertex.z - center.z) + center.z
+    return {
+      x: rotatedX,
+      y: vertex.y,
+      z: rotatedZ,
+    }
+  }
+
+  drawPoint(point: Point, radius: number, color: string) {
+    const canvasPoint = this.translateToCanvasPoint(point)
+    this.context.fillStyle = color
+    this.context.beginPath()
+    this.context.arc(canvasPoint.x, canvasPoint.y, radius, 0, Math.PI * 2)
+    this.context.fill()
+  }
+
+  drawLine(pointA: Point, pointB: Point, color: string) {
+    const canvasPointA = this.translateToCanvasPoint(pointA)
+    const canvasPointB = this.translateToCanvasPoint(pointB)
+    this.context.fillStyle = color
+    this.context.beginPath()
+    this.context.moveTo(canvasPointA.x, canvasPointA.y)
+    this.context.lineTo(canvasPointB.x, canvasPointB.y)
+    this.context.closePath()
+    this.context.stroke()
+  }
+
+  translateToCanvasPoint(point: Point): Point {
+    return {
+      x: (this.canvasWidth / 2) + point.x,
+      y: (this.canvasHeight / 2) - point.y,
+    }
+  }
+
+  showFPS(frameDuration: number) {
+    if (!this.fpsElement) {
+      this.fpsElement = document.getElementById('fps')
+    }
+
+    // Set current frame duration and set the index
+    this.frameDurationCache[this.frameDurationCacheCurrentIndex] = frameDuration
+    this.frameDurationCacheCurrentIndex += 1
+    const maxFPSCacheSize = 30
+    if (this.frameDurationCacheCurrentIndex >= maxFPSCacheSize) {
+      this.frameDurationCacheCurrentIndex = 0
+    }
+
+    // Calculate the average frame duration
+    const frameDurationSum = this.frameDurationCache.reduce((prev, cur) => {
+      return prev + cur
+    }, 0)
+    const avgFrameDuration = frameDurationSum / this.frameDurationCache.length
+    const fps = Math.round(1000 / avgFrameDuration)
+    this.fpsElement.innerText = fps.toString()
+  }
+}
