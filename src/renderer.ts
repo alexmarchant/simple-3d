@@ -1,6 +1,7 @@
 import { Polygon, Point, Vertex} from './common'
 import { Mesh } from './mesh'
 import { Camera } from './camera'
+import { close } from 'fs'
 
 interface RendererOptions {
   canvas: HTMLCanvasElement,
@@ -56,7 +57,8 @@ export class Renderer {
 
   renderShapes() {
     if (this.renderPolys) {
-      this.meshes.forEach(mesh => {
+      const sortedMeshes = this.sortMeshes()
+      sortedMeshes.forEach(mesh => {
         mesh.polygons.forEach(polygon => {
           this.renderPolygon(polygon)
         })
@@ -213,5 +215,51 @@ export class Renderer {
     }
 
     this.dElement.innerText = this.d.toString()
+  }
+
+  sortMeshes(): Mesh[] {
+    interface MeshDistanceData {
+      mesh: Mesh
+      closestDistance: number
+    }
+
+    const meshDistances: MeshDistanceData[] = []
+
+    this.meshes.forEach(mesh => {
+      let closestDistance = Infinity
+
+      mesh.polygons.forEach(polygon => {
+        const a = this.cameraDistance(polygon.a)
+        const b = this.cameraDistance(polygon.a)
+        const c = this.cameraDistance(polygon.a)
+        const avg = (a + b + c) / 3
+        // const min = Math.min(a, b, c)
+        closestDistance = Math.min(avg, closestDistance)
+      })
+
+      meshDistances.push({
+        mesh,
+        closestDistance,
+      })
+    })
+
+
+    meshDistances.sort((a, b) => {
+      return b.closestDistance - a.closestDistance
+    })
+
+    console.log(meshDistances)
+
+    return meshDistances.map(obj => {
+      return obj.mesh
+    })
+  }
+
+  cameraDistance(vertex: Vertex): number {
+    const x = Math.pow(this.camera.position.x - vertex.x, 2)
+    const y = Math.pow(this.camera.position.y - vertex.y, 2)
+    const z = Math.pow(this.camera.position.z - vertex.z, 2)
+    const distance = Math.pow(x + y + z, 0.5)
+    return distance
   }
 }
