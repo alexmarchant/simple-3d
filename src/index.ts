@@ -40,6 +40,13 @@ const meshes: Mesh[] = [
     bottomLeft: { x: -10, y: 10, z: 50 },
     color: 'purple',
   }),
+  new RectMesh({
+    topLeft: { x: -10, y: 10, z: 30 },
+    topRight: { x: 10, y: 10, z: 30 },
+    bottomRight: { x: 10, y: -10, z: 30 },
+    bottomLeft: { x: -10, y: -10, z: 30 },
+    color: 'orange',
+  }),
 ]
 const renderer = new Renderer({
   canvas: canvas,

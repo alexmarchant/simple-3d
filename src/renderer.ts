@@ -57,9 +57,11 @@ export class Renderer {
 
   renderShapes() {
     if (this.renderPolys) {
-      const sortedPolygons = this.sortPolygons()
-      sortedPolygons.forEach(polygon => {
-        this.renderPolygon(polygon)
+      const sortedMeshes = this.sortMeshes()
+      sortedMeshes.forEach(mesh => {
+        mesh.polygons.forEach(polygon => {
+          this.renderPolygon(polygon)
+        })
       })
     }
 
@@ -215,34 +217,39 @@ export class Renderer {
     this.dElement.innerText = this.d.toString()
   }
 
-  sortPolygons(): Polygon[] {
-    interface PolygonDistanceData {
-      polygon: Polygon
-      distance: number
+  sortMeshes(): Mesh[] {
+    interface MeshDistanceData {
+      mesh: Mesh
+      closestDistance: number
     }
 
-    const polygonDistances: PolygonDistanceData[] = []
+    const meshDistances: MeshDistanceData[] = []
 
     this.meshes.forEach(mesh => {
+      let closestDistance = Infinity
+
       mesh.polygons.forEach(polygon => {
         const a = this.cameraDistance(polygon.a)
         const b = this.cameraDistance(polygon.a)
         const c = this.cameraDistance(polygon.a)
-        const distance = (a + b + c) / 3
-        polygonDistances.push({
-          polygon,
-          distance,
-        })
+        const avg = (a + b + c) / 3
+        // const min = Math.min(a, b, c)
+        closestDistance = Math.min(avg, closestDistance)
+      })
+
+      meshDistances.push({
+        mesh,
+        closestDistance,
       })
     })
 
 
-    polygonDistances.sort((a, b) => {
-      return b.distance - a.distance
+    meshDistances.sort((a, b) => {
+      return b.closestDistance - a.closestDistance
     })
 
-    return polygonDistances.map(obj => {
-      return obj.polygon
+    return meshDistances.map(obj => {
+      return obj.mesh
     })
   }
 
