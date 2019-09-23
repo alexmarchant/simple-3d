@@ -12,7 +12,10 @@ export class ObjParser {
     this.verts = []
     this.faces = []
     this.objSource = objSource
+    console.log('Starting parser...')
     this.parse()
+    console.log(`Parsed ${this.verts.length} verts`)
+    console.log(`Parsed ${this.faces.length} faces`)
   }
 
   parse() {
