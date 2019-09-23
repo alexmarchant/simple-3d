@@ -7,6 +7,10 @@ export interface KeyboardInput {
   d?: Date
   q?: Date
   e?: Date
+  up?: Date
+  down?: Date
+  left?: Date
+  right?: Date
 }
 
 interface ActiveKeyboardInput {
@@ -16,6 +20,10 @@ interface ActiveKeyboardInput {
   d: boolean
   q: boolean
   e: boolean
+  up: boolean
+  down: boolean
+  left: boolean
+  right: boolean
 }
 
 export class Camera {
@@ -42,6 +50,10 @@ export class Camera {
       d: false,
       q: false,
       e: false,
+      up: false,
+      down: false,
+      left: false,
+      right: false,
     }
   }
 
@@ -60,6 +72,14 @@ export class Camera {
 
   calcMovementVector(): Vector3D {
     let movementVector = { x: 0, y: 0, z: 0 }
+
+    if (this.activeKeyboardInput.q) {
+      movementVector.y = this.movementSpeed
+    }
+    if (this.activeKeyboardInput.e) {
+      movementVector.y = -this.movementSpeed
+    }
+
     if (!this.isMoving) {
       return movementVector
     }
@@ -69,6 +89,9 @@ export class Camera {
     const radians = absoluteAngle * (Math.PI / 180)
     movementVector.x = Math.sin(radians) * this.movementSpeed
     movementVector.z = Math.cos(radians) * this.movementSpeed
+
+
+    console.log(movementVector)
 
     return movementVector
   }
@@ -114,16 +137,20 @@ export class Camera {
   }
 
   calcActiveKeyboardInput(): ActiveKeyboardInput {
-    const activeKeyboardInput = {
+    const activeKeyboardInput: ActiveKeyboardInput = {
       w: false,
       a: false,
       s: false,
       d: false,
       q: false,
       e: false,
+      up: false,
+      down: false,
+      left: false,
+      right: false,
     }
 
-    // Forward backward
+    // Move forward backward
     if (this.keyboardInput.w && this.keyboardInput.s) {
       if (this.keyboardInput.w.getTime() > this.keyboardInput.s.getTime()) {
         activeKeyboardInput.w = true
@@ -136,7 +163,7 @@ export class Camera {
       activeKeyboardInput.s = true
     }
 
-    // Left right
+    // Move left right
     if (this.keyboardInput.a && this.keyboardInput.d) {
       if (this.keyboardInput.a.getTime() > this.keyboardInput.d.getTime()) {
         activeKeyboardInput.a = true
@@ -149,7 +176,7 @@ export class Camera {
       activeKeyboardInput.d = true
     }
 
-    // Rotate left right
+    // Move up and down
     if (this.keyboardInput.q && this.keyboardInput.e) {
       if (this.keyboardInput.q.getTime() > this.keyboardInput.e.getTime()) {
         activeKeyboardInput.q = true
@@ -162,17 +189,49 @@ export class Camera {
       activeKeyboardInput.e = true
     }
 
+    // Rotate left right
+    if (this.keyboardInput.left && this.keyboardInput.right) {
+      if (this.keyboardInput.left.getTime() > this.keyboardInput.right.getTime()) {
+        activeKeyboardInput.left = true
+      } else {
+        activeKeyboardInput.right = true
+      }
+    } else if (this.keyboardInput.left) {
+      activeKeyboardInput.left = true
+    } else if (this.keyboardInput.right) {
+      activeKeyboardInput.right = true
+    }
+
+    // Rotate up down
+    if (this.keyboardInput.up && this.keyboardInput.down) {
+      if (this.keyboardInput.up.getTime() > this.keyboardInput.down.getTime()) {
+        activeKeyboardInput.up = true
+      } else {
+        activeKeyboardInput.down = true
+      }
+    } else if (this.keyboardInput.up) {
+      activeKeyboardInput.up = true
+    } else if (this.keyboardInput.down) {
+      activeKeyboardInput.down = true
+    }
+
     return activeKeyboardInput
   }
 
   calcRotationVector(): Vector2D {
     const rotationVector = { x: 0, y: 0 }
 
-    if (this.activeKeyboardInput.q) {
+    if (this.activeKeyboardInput.left) {
       rotationVector.x = -this.rotationSpeed
     }
-    if (this.activeKeyboardInput.e) {
+    if (this.activeKeyboardInput.right) {
       rotationVector.x = this.rotationSpeed
+    }
+    if (this.activeKeyboardInput.up) {
+      rotationVector.y = this.rotationSpeed
+    }
+    if (this.activeKeyboardInput.down) {
+      rotationVector.y = -this.rotationSpeed
     }
 
     return rotationVector

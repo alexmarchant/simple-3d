@@ -134,10 +134,18 @@ export class Renderer {
 
   rotateVertexForCamera(vertex: Vertex): Vertex {
     const center = { x: 0, y: 0, z: 0 } // camera has been offset already
+    let rotatedX, rotatedY, rotatedZ
+
+    // X rotation
     const radiansX = this.camera.rotation.x * (Math.PI / 180)
-    const radiansY = this.camera.rotation.y * (Math.PI / 180)
-    const rotatedX = Math.cos(radiansX) * (vertex.x - center.x) - Math.sin(radiansX) * (vertex.z - center.z) + center.x
-    const rotatedZ = Math.sin(radiansX) * (vertex.x - center.x) + Math.cos(radiansX) * (vertex.z - center.z) + center.z
+    rotatedX = Math.cos(radiansX) * (vertex.x - center.x) - Math.sin(radiansX) * (vertex.z - center.z) + center.x
+    rotatedZ = Math.sin(radiansX) * (vertex.x - center.x) + Math.cos(radiansX) * (vertex.z - center.z) + center.z
+
+    // Y rotation -- TODO, this aint workin
+    // const radiansY = this.camera.rotation.y * (Math.PI / 180)
+    // rotatedX = Math.cos(radiansY) * (vertex.y - center.y) - Math.sin(radiansY) * (vertex.x - center.x) + center.y
+    // rotatedY = Math.sin(radiansY) * (vertex.y - center.y) + Math.cos(radiansY) * (vertex.x - center.x) + center.x
+
     return {
       x: rotatedX,
       y: vertex.y,

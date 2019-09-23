@@ -38,6 +38,18 @@ function handleKeypresses() {
     if (event.code === 'KeyE') {
       input.e = new Date()
     }
+    if (event.code === 'ArrowUp') {
+      input.up = new Date()
+    }
+    if (event.code === 'ArrowDown') {
+      input.down = new Date()
+    }
+    if (event.code === 'ArrowLeft') {
+      input.left = new Date()
+    }
+    if (event.code === 'ArrowRight') {
+      input.right = new Date()
+    }
 
     renderer.camera.setKeyboardInput(input)
   })
@@ -62,6 +74,18 @@ function handleKeypresses() {
     }
     if (event.code === 'KeyE') {
       input.e = null
+    }
+    if (event.code === 'ArrowUp') {
+      input.up = null
+    }
+    if (event.code === 'ArrowDown') {
+      input.down = null
+    }
+    if (event.code === 'ArrowLeft') {
+      input.left = null
+    }
+    if (event.code === 'ArrowRight') {
+      input.right = null
     }
 
     renderer.camera.setKeyboardInput(input)
