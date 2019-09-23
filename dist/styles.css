@@ -10,13 +10,13 @@ body {
 .container {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
   height: 100%;
   background-color: #ddd;
 }
 
 .header {
+  margin-top: 50px;
   width: 640px;
 }
 
@@ -27,6 +27,11 @@ body {
 
 .header-group:last-child {
   border-bottom: 0;
+}
+
+.footer {
+  width: 640px;
+  padding: 5px 0;
 }
 
 canvas {
