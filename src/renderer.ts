@@ -24,7 +24,7 @@ export class Renderer {
   renderEdges = false
   renderVerts = false
   d: number = 400
-  fps: number = 40
+  fps: number = 60
   lastFrameDate = new Date()
   frameDurationCache: number[] = []
   frameDurationCacheCurrentIndex = 0
