@@ -8,6 +8,7 @@ export interface Vertex {
   y: number
   z: number
   texMap?: TextureMap
+  norm?: Vector3D
 }
 
 export interface Rotation3D {

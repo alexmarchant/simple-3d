@@ -12,6 +12,7 @@ const renderer = new Renderer({
   canvasHeight: 480,
   meshes: foxParser.meshes(),
 })
+console.log(foxParser.meshes())
 renderer.camera.position.x = -84
 renderer.camera.position.y = 43
 renderer.camera.position.z = 67
