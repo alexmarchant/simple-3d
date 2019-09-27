@@ -7,6 +7,7 @@ export interface Vertex {
   x: number
   y: number
   z: number
+  texMap?: TextureMap
 }
 
 export interface Rotation3D {
@@ -30,4 +31,9 @@ export interface Vector3D {
 export interface Vector2D {
   x: number,
   y: number,
+}
+
+export interface TextureMap {
+  u: number,
+  v: number,
 }
