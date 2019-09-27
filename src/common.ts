@@ -38,3 +38,17 @@ export interface TextureMap {
   u: number,
   v: number,
 }
+
+export function loadImage(url: string): Promise<HTMLImageElement> {
+  return new Promise(resolve => {
+    let image = new Image()
+    image.onload = () => resolve(image)
+    image.src = url
+  })
+}
+
+export async function loadBitmap(url: string): Promise<ImageBitmap> {
+  const image = await loadImage(url)
+  const bitmap = await window.createImageBitmap(image)
+  return bitmap
+}
