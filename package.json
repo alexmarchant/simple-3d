@@ -5,7 +5,10 @@
     "dev": "npx webpack-dev-server",
     "build": "npx webpack"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@types/lodash": "^4.14.140",
+    "lodash": "^4.17.15"
+  },
   "devDependencies": {
     "eslint": "^6.4.0",
     "raw-loader": "^3.1.0",

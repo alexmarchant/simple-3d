@@ -1,6 +1,7 @@
 import { Polygon, Point, Vertex} from './common'
 import { Mesh } from './mesh'
 import { Camera } from './camera'
+import * as _ from 'lodash'
 
 interface RendererOptions {
   canvas: HTMLCanvasElement,
@@ -36,13 +37,20 @@ export class Renderer {
     this.canvasHeight = options.canvasHeight
     this.meshes = options.meshes
     this.camera = new Camera()
+
+    this.showFPS = this.showFPS.bind(this)
+    this.showD = this.showD.bind(this)
   }
 
   start() {
+    const throttledShowFPS = _.throttle(this.showFPS, 333)
+    const throttledShowD = _.throttle(this.showD, 333)
+
     this.intervalID = window.setInterval(() => {
       const frameDuration: number = new Date().getTime() - this.lastFrameDate.getTime()
-      this.showFPS(frameDuration)
-      this.showD()
+      this.addFrameDurationToCache(frameDuration)
+      throttledShowFPS()
+      throttledShowD()
       this.camera.move(frameDuration)
       this.render()
       this.lastFrameDate = new Date()
@@ -51,10 +59,10 @@ export class Renderer {
 
   render() {
     this.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight)
-    this.renderShapes()
+    this.renderMeshes()
   }
 
-  renderShapes() {
+  renderMeshes() {
     if (this.renderPolys) {
       this.meshes.forEach(mesh => {
         mesh.polygons.forEach(polygon => {
@@ -91,6 +99,12 @@ export class Renderer {
     const pointB = this.projectVertex(cameraVertexB)
     const cameraVertexC = this.orientVertexForCamera(polygon.c)
     const pointC = this.projectVertex(cameraVertexC)
+
+    // Skip triangles not in front of the camera
+    if (Math.min(cameraVertexA.z, cameraVertexB.z, cameraVertexC.z) <= 0) {
+      return
+    }
+
     this.drawTriangle(pointA, pointB, pointC, polygon.color)
   }
 
@@ -99,12 +113,24 @@ export class Renderer {
     const pointA = this.projectVertex(cameraVertexA)
     const cameraVertexB = this.orientVertexForCamera(vertexB)
     const pointB = this.projectVertex(cameraVertexB)
+
+    // Skip lines not in front of the camera
+    if (Math.min(cameraVertexA.z, cameraVertexB.z) <= 0) {
+      return
+    }
+
     this.drawLine(pointA, pointB, color)
   }
 
   renderVertex(vertex: Vertex, radius: number, color: string) {
     const cameraVertex = this.orientVertexForCamera(vertex)
     const point = this.projectVertex(cameraVertex)
+
+    // Skip verts not in front of the camera
+    if (cameraVertex.z <= 0) {
+      return
+    }
+    
     this.drawPoint(point, radius, color)
   }
 
@@ -193,17 +219,19 @@ export class Renderer {
     }
   }
 
-  showFPS(frameDuration: number) {
-    if (!this.fpsElement) {
-      this.fpsElement = document.getElementById('fps')
-    }
-
+  addFrameDurationToCache(frameDuration: number) {
     // Set current frame duration and set the index
     this.frameDurationCache[this.frameDurationCacheCurrentIndex] = frameDuration
     this.frameDurationCacheCurrentIndex += 1
     const maxFPSCacheSize = 30
     if (this.frameDurationCacheCurrentIndex >= maxFPSCacheSize) {
       this.frameDurationCacheCurrentIndex = 0
+    }
+  }
+
+  showFPS() {
+    if (!this.fpsElement) {
+      this.fpsElement = document.getElementById('fps')
     }
 
     // Calculate the average frame duration
