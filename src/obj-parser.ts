@@ -105,13 +105,13 @@ export class ObjParser {
     const mesh = new Mesh()
 
     this.faces.forEach(face => {
-      const a = this.verts[face.vertIndices[0]]
+      const a = Object.assign({}, this.verts[face.vertIndices[0]])
       a.texMap = this.vertTexMaps[face.vertTexMapIndices[0]]
       a.norm = this.vertNorms[face.vertNormIndices[0]]
-      const b = this.verts[face.vertIndices[1]]
+      const b = Object.assign({}, this.verts[face.vertIndices[1]])
       b.texMap = this.vertTexMaps[face.vertTexMapIndices[1]]
       b.norm = this.vertNorms[face.vertNormIndices[1]]
-      const c = this.verts[face.vertIndices[2]]
+      const c = Object.assign({}, this.verts[face.vertIndices[2]])
       c.texMap = this.vertTexMaps[face.vertTexMapIndices[2]]
       c.norm = this.vertNorms[face.vertNormIndices[2]]
       mesh.polygons.push({
