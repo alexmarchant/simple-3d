@@ -106,14 +106,14 @@ export class ObjParser {
 
     this.faces.forEach(face => {
       const a = Object.assign({}, this.verts[face.vertIndices[0]])
-      a.texMap = this.vertTexMaps[face.vertTexMapIndices[0]]
-      a.norm = this.vertNorms[face.vertNormIndices[0]]
+      a.texMap = Object.assign({}, this.vertTexMaps[face.vertTexMapIndices[0]])
+      a.norm = Object.assign({}, this.vertNorms[face.vertNormIndices[0]])
       const b = Object.assign({}, this.verts[face.vertIndices[1]])
-      b.texMap = this.vertTexMaps[face.vertTexMapIndices[1]]
-      b.norm = this.vertNorms[face.vertNormIndices[1]]
+      b.texMap = Object.assign({}, this.vertTexMaps[face.vertTexMapIndices[1]])
+      b.norm = Object.assign({}, this.vertNorms[face.vertNormIndices[1]])
       const c = Object.assign({}, this.verts[face.vertIndices[2]])
-      c.texMap = this.vertTexMaps[face.vertTexMapIndices[2]]
-      c.norm = this.vertNorms[face.vertNormIndices[2]]
+      c.texMap = Object.assign({}, this.vertTexMaps[face.vertTexMapIndices[2]])
+      c.norm = Object.assign({}, this.vertNorms[face.vertNormIndices[2]])
       mesh.polygons.push({
         a,
         b,
