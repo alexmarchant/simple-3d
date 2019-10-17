@@ -102,4 +102,10 @@ function handleRenderFlags() {
   document.getElementById('render-verts').addEventListener('change', event => {
     renderer.renderVerts = (event.target as HTMLInputElement).checked
   })
+  document.getElementById('render-vert-norms').addEventListener('change', event => {
+    renderer.renderVertNorms = (event.target as HTMLInputElement).checked
+  })
+  document.getElementById('render-face-norms').addEventListener('change', event => {
+    renderer.renderFaceNorms = (event.target as HTMLInputElement).checked
+  })
 }

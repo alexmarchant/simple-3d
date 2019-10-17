@@ -1,7 +1,13 @@
-import { Polygon, Point, Vertex, loadBitmap} from './common'
+import { Polygon, Point, Vertex, Vector3D, loadBitmap} from './common'
 import { Mesh } from './mesh'
 import { Camera } from './camera'
 import * as _ from 'lodash'
+
+declare global {
+  interface Window {
+    renderer: Renderer
+  }
+}
 
 interface RendererOptions {
   canvas: HTMLCanvasElement,
@@ -27,6 +33,9 @@ export class Renderer {
   renderPolys = true
   renderEdges = false
   renderVerts = false
+  renderVertNorms = false
+  renderFaceNorms = false
+  normLineLength = 3
   throttledConsole = _.throttle((...a) => console.log(a), 100)
   d: number = 400
   fps: number = 60
@@ -45,6 +54,7 @@ export class Renderer {
 
     this.showFPS = this.showFPS.bind(this)
     this.showD = this.showD.bind(this)
+    window.renderer = this
   }
 
   async start() {
@@ -80,9 +90,9 @@ export class Renderer {
     if (this.renderEdges) {
       this.meshes.forEach(mesh => {
         mesh.polygons.forEach(polygon => {
-          this.renderLine(polygon.a, polygon.b, 'black')
-          this.renderLine(polygon.b, polygon.c, 'black')
-          this.renderLine(polygon.c, polygon.a, 'black')
+          this.renderLine(polygon.a, polygon.b, '#ddd')
+          this.renderLine(polygon.b, polygon.c, '#ddd')
+          this.renderLine(polygon.c, polygon.a, '#ddd')
         })
       })
     }
@@ -96,20 +106,30 @@ export class Renderer {
         })
       })
     }
+
+    if (this.renderVertNorms) {
+      this.meshes.forEach(mesh => {
+        mesh.polygons.forEach(polygon => {
+          this.renderVertNorm(polygon.a, 'blue')
+          this.renderVertNorm(polygon.b, 'blue')
+          this.renderVertNorm(polygon.c, 'blue')
+        })
+      })
+    }
+
+    if (this.renderFaceNorms) {
+      this.meshes.forEach(mesh => {
+        mesh.polygons.forEach(polygon => {
+          this.renderFaceNorm(polygon, 'purple')
+        })
+      })
+    }
   }
 
   renderPolygon(polygon: Polygon) {
-    // Skip triangles with normals facing away from camera
-    // const normals = polygon.a.norm
-    // const camX = this.convertDegToVec(this.camera.rotation.x)
-    // const camY = this.convertDegToVec(this.camera.rotation.y)
-    // x is left right
-    // y is up down
-    // if (Math.abs(normals.x - camX) <= 0.5) return
-    // this.throttledConsole(JSON.stringify(normals))
-    // if (normals.x > 0) return
-    // if (normals.y > 0) return
-    // if (normals.z > 0) return
+    if (!this.polygonNormalFacingCamera(polygon)) {
+      return
+    }
 
     const cameraVertexA = this.orientVertexForCamera(polygon.a)
     const pointA = this.projectVertex(cameraVertexA)
@@ -152,6 +172,52 @@ export class Renderer {
     }
     
     this.drawPoint(point, radius, color)
+  }
+
+  renderVertNorm(vertex: Vertex, color: string) {
+    const lineStart = vertex
+    const lineEnd: Vertex = {
+      x: vertex.x + vertex.norm.x * this.normLineLength,
+      y: vertex.y + vertex.norm.y * this.normLineLength,
+      z: vertex.z + vertex.norm.z * this.normLineLength,
+    }
+    console.log(Math.sqrt((lineEnd.x - lineStart.x) ** 2 + (lineEnd.y - lineStart.y) ** 2 + (lineEnd.z - lineStart.z) ** 2))
+
+    const cameraStartVertex = this.orientVertexForCamera(lineStart)
+    const cameraEndVertex = this.orientVertexForCamera(lineEnd)
+    const startPoint = this.projectVertex(cameraStartVertex)
+    const endPoint = this.projectVertex(cameraEndVertex)
+
+    if (Math.min(cameraStartVertex.z, cameraEndVertex.z) <= 0) {
+      return
+    }
+
+    this.drawLine(startPoint, endPoint, color)
+  }
+
+  renderFaceNorm(polygon: Polygon, color: string) {
+    const norm = this.polygonNormal(polygon)
+    const lineStart: Vertex = {
+      x: (polygon.a.x + polygon.b.x + polygon.c.x) / 3,
+      y: (polygon.a.y + polygon.b.y + polygon.c.y) / 3,
+      z: (polygon.a.z + polygon.b.z + polygon.c.z) / 3,
+    }
+    const lineEnd: Vertex = {
+      x: lineStart.x + norm.x * this.normLineLength,
+      y: lineStart.y + norm.y * this.normLineLength,
+      z: lineStart.z + norm.z * this.normLineLength,
+    }
+
+    const cameraStartVertex = this.orientVertexForCamera(lineStart)
+    const cameraEndVertex = this.orientVertexForCamera(lineEnd)
+    const startPoint = this.projectVertex(cameraStartVertex)
+    const endPoint = this.projectVertex(cameraEndVertex)
+
+    if (Math.min(cameraStartVertex.z, cameraEndVertex.z) <= 0) {
+      return
+    }
+
+    this.drawLine(startPoint, endPoint, color)
   }
 
   projectVertex(vertex: Vertex): Point {
@@ -336,5 +402,73 @@ export class Renderer {
       offsetDeg = Math.abs(within360 - 360)
     }
     return offsetDeg / 180
+  }
+
+  polygonNormal(polygon: Polygon): Vector3D {
+    const x = (polygon.a.norm.x + polygon.b.norm.x + polygon.c.norm.x) / 3
+    const y = (polygon.a.norm.y + polygon.b.norm.y + polygon.c.norm.y) / 3
+    const z = (polygon.a.norm.z + polygon.b.norm.z + polygon.c.norm.z) / 3
+    return {
+      x,
+      y,
+      z,
+    }
+  }
+
+  normalize(vector: Vector3D) {
+    const mag = this.magnitude(vector)
+    return {
+      x: vector.x / mag,
+      y: vector.y / mag,
+      z: vector.z / mag,
+    }
+  }
+
+  magnitude(vector: Vector3D) {
+    return Math.sqrt(vector.x ** 2 + vector.y ** 2 + vector.z ** 2)
+  }
+
+  cameraNormal(): Vector3D {
+    // Use dot product to convert angle to vectors, first we get the z vector
+    // then compute the x vector from whats left over
+
+    // Dot product, we know angle between starting normal and current normal,
+    // need to solve for current normal
+    // const startingNormal = { x: 0, y: 0, z: 1 }
+    // cam.x * start.x + cam.y * start.y + cam.z * start.z = cos(theta)
+    // cam.x * 0 + cam.y * 0 + cam.z * 1 = cos(theta)
+    // 0 + 0 + cam.z = cos(theta)
+    // cam.z = cos(theta)
+    const nonRepeatingXAngle = this.camera.rotation.x % 360
+    const xAngleRads = nonRepeatingXAngle * (Math.PI / 180)
+    const z = Math.cos(xAngleRads)
+
+    // 1 = sqrt(x^2 + y^2 + z^2)
+    // 1 = sqrt(x^2 + 0^2 + z^2)
+    // 1 = sqrt(x^2 + z^2)
+    // 1^2 = x^2 + z^2
+    // 1 - z^2 = x^2
+    // x = sqrt(1-z^2)
+    let x = Math.sqrt(1 - z ** 2)
+    if (nonRepeatingXAngle >= 180) {
+      x = -x
+    }
+    const y = 0
+    return {
+      x: x,
+      y: y,
+      z: z,
+    }
+  }
+
+  dotProduct(a: Vector3D, b: Vector3D): number {
+    return a.x * b.x + a.y * b.y + a.z * b.z
+  }
+
+  polygonNormalFacingCamera(polygon: Polygon): boolean {
+    const normal = this.polygonNormal(polygon)
+    const cameraNormal = this.cameraNormal()
+    const dotProduct = this.dotProduct(normal, cameraNormal)
+    return dotProduct <= 0
   }
 }

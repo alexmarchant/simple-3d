@@ -13,9 +13,9 @@ const renderer = new Renderer({
   meshes: foxParser.meshes(),
   textureURL: '/texture.png',
 })
-renderer.camera.position.x = -84
+renderer.camera.position.x = 105
 renderer.camera.position.y = 43
-renderer.camera.position.z = 67
-renderer.camera.rotation.x = 122
+renderer.camera.position.z = -2
+renderer.camera.rotation.x = 271
 renderer.start()
 initPage(renderer)
