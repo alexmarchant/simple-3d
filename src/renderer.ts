@@ -146,6 +146,7 @@ export class Renderer {
     this.mapTexture(polygon.a, pointA, polygon.b, pointB, polygon.c, pointC)
     // Use this for drawing plain colors
     // this.drawTriangle(pointA, pointB, pointC, polygon.color)
+    this.addShading(polygon, pointA, pointB, pointC)
   }
 
   renderLine(vertexA: Vertex, vertexB: Vertex, color: string) {
@@ -311,6 +312,19 @@ export class Renderer {
     this.context.restore()
   }
 
+  addShading(polygon: Polygon, pointA: Point, pointB: Point, pointC: Point) {
+    const shadowStrength = 0.3
+    const normal = this.polygonNormal(polygon)
+    const cameraNormal = this.cameraNormal()
+    const dotProduct = this.dotProduct(normal, cameraNormal)
+    // Backlit
+    const alpha = (Math.abs(dotProduct)) * shadowStrength
+    // Frontlit
+    // const alpha = (1 - Math.abs(dotProduct)) * shadowStrength
+    // console.log(alpha)
+    this.drawTriangle(pointA, pointB, pointC, `rgba(0, 0, 0, ${alpha})`)
+  }
+
   drawTriangle(pointA: Point, pointB: Point, pointC: Point, color: string) {
     const canvasPointA = this.translateToCanvasPoint(pointA)
     const canvasPointB = this.translateToCanvasPoint(pointB)
@@ -393,17 +407,6 @@ export class Renderer {
     return distance
   }
 
-  convertDegToVec(deg: number): number {
-    const within360 = deg % 360
-    let offsetDeg
-    if (within360 < 180) {
-      offsetDeg = within360
-    } else {
-      offsetDeg = Math.abs(within360 - 360)
-    }
-    return offsetDeg / 180
-  }
-
   polygonNormal(polygon: Polygon): Vector3D {
     const x = (polygon.a.norm.x + polygon.b.norm.x + polygon.c.norm.x) / 3
     const y = (polygon.a.norm.y + polygon.b.norm.y + polygon.c.norm.y) / 3
@@ -469,6 +472,6 @@ export class Renderer {
     const normal = this.polygonNormal(polygon)
     const cameraNormal = this.cameraNormal()
     const dotProduct = this.dotProduct(normal, cameraNormal)
-    return dotProduct <= 0
+    return dotProduct < 0
   }
 }
