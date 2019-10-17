@@ -399,15 +399,8 @@ export class Renderer {
     this.dElement.innerText = this.d.toString()
   }
 
-  cameraDistance(vertex: Vertex): number {
-    const x = Math.pow(this.camera.position.x - vertex.x, 2)
-    const y = Math.pow(this.camera.position.y - vertex.y, 2)
-    const z = Math.pow(this.camera.position.z - vertex.z, 2)
-    const distance = Math.pow(x + y + z, 0.5)
-    return distance
-  }
-
   polygonNormal(polygon: Polygon): Vector3D {
+    // Average out vertex normals
     const x = (polygon.a.norm.x + polygon.b.norm.x + polygon.c.norm.x) / 3
     const y = (polygon.a.norm.y + polygon.b.norm.y + polygon.c.norm.y) / 3
     const z = (polygon.a.norm.z + polygon.b.norm.z + polygon.c.norm.z) / 3
