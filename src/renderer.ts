@@ -320,7 +320,6 @@ export class Renderer {
     const alpha = (Math.abs(dotProduct)) * shadowStrength
     // Frontlit
     // const alpha = (1 - Math.abs(dotProduct)) * shadowStrength
-    // console.log(alpha)
     this.drawTriangle(pointA, pointB, pointC, `rgba(0, 0, 0, ${alpha})`)
   }
 
