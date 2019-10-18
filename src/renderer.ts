@@ -182,7 +182,6 @@ export class Renderer {
       y: vertex.y + vertex.norm.y * this.normLineLength,
       z: vertex.z + vertex.norm.z * this.normLineLength,
     }
-    console.log(Math.sqrt((lineEnd.x - lineStart.x) ** 2 + (lineEnd.y - lineStart.y) ** 2 + (lineEnd.z - lineStart.z) ** 2))
 
     const cameraStartVertex = this.orientVertexForCamera(lineStart)
     const cameraEndVertex = this.orientVertexForCamera(lineEnd)
