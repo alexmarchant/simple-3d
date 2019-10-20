@@ -1,5 +1,3 @@
 TODO:
 
-- try zbuffer to fix order of rendered stuff
-- switch camera angle to 3d normal vector instead of angles for ease of conversion
-- normals break when rotation angle goes negative
+- try zbuffer to fix order of rendered stuff (ended up tweaking painters algo, that helped, probably not going to do this one cause its a lot of work, but would be an improvement, we still get ordering bugs)
