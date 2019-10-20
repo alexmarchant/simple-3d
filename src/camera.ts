@@ -67,6 +67,21 @@ export class Camera {
     const rotationVector = this.calcRotationVector()
     this.rotation.x += rotationVector.x * (ms / 1000)
     this.rotation.y += rotationVector.y * (ms / 1000)
+
+    // 0 - 360 constraints
+    if (this.rotation.x < 0) {
+      this.rotation.x = 360 + this.rotation.x
+    }
+    if (this.rotation.y < 0) {
+      this.rotation.y = 360 + this.rotation.y
+    }
+    if (this.rotation.x >= 360) {
+      this.rotation.x = this.rotation.x % 360
+    }
+    if (this.rotation.y >= 360) {
+      this.rotation.y = this.rotation.y % 360
+    }
+
     this.showRotation()
   }
 
