@@ -81,7 +81,8 @@ export class Renderer {
   renderMeshes() {
     if (this.renderPolys) {
       this.meshes.forEach(mesh => {
-        mesh.polygons.forEach(polygon => {
+        const sortedPolygons = this.sortPolygons(mesh.polygons)
+        sortedPolygons.forEach(polygon => {
           this.renderPolygon(polygon)
         })
       })
@@ -463,6 +464,22 @@ export class Renderer {
     const normal = this.polygonNormal(polygon)
     const cameraNormal = this.cameraNormal()
     const dotProduct = this.dotProduct(normal, cameraNormal)
-    return dotProduct < 0
+    return dotProduct < 0.6
+  }
+
+  sortPolygons(polygons: Polygon[]): Polygon[] {
+    return polygons.sort((a, b) => {
+      const aa = this.orientVertexForCamera(a.a)
+      const ab = this.orientVertexForCamera(a.b)
+      const ac = this.orientVertexForCamera(a.c)
+      const ba = this.orientVertexForCamera(b.a)
+      const bb = this.orientVertexForCamera(b.b)
+      const bc = this.orientVertexForCamera(b.c)
+      const avgA = aa.z + ab.z + ac.z / 3
+      const avgB = ba.z + bb.z + bc.z / 3
+      if (avgA > avgB) return -1
+      if (avgA < avgB) return 1
+      if (avgA === avgB) return 0
+    })
   }
 }
