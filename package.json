@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@types/lodash": "^4.14.140",
-    "lodash": "^4.17.15"
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "eslint": "^6.4.0",
